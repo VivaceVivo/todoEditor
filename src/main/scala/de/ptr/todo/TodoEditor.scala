@@ -8,6 +8,8 @@ import scala.swing.MenuBar
 import scala.swing.Menu
 import scala.swing.MenuItem
 import scala.swing.Action
+import scala.swing.EditorPane
+import java.awt.Dimension
 
 object TodoEditor extends SimpleSwingApplication {
 
@@ -19,6 +21,7 @@ object TodoEditor extends SimpleSwingApplication {
       layout += new Button {
         text = "Click Me!"
       } -> North
+      layout +=editor->Center
     }
 
     val quitAction = Action("Quit") { System.exit(0) }
@@ -33,4 +36,9 @@ object TodoEditor extends SimpleSwingApplication {
     }
 
   }
+  val editor = new EditorPane{
+    size = new Dimension(600, 400)
+  }
+  
+  top.pack()
 }
