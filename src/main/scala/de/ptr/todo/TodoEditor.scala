@@ -10,37 +10,51 @@ import scala.swing.MenuItem
 import scala.swing.Action
 import scala.swing.EditorPane
 import java.awt.Dimension
-import scala.swing.event.KeyPressed
-import scala.swing.event.Key.Modifier.Control
-import scala.swing.event.Key
-import scala.swing.event.Key.Location.Standard
-import scala.swing.event.Key.Location.Unknown
+import java.io.File
 
-object TodoEditor extends SimpleSwingApplication {
+trait FileStateListener{
+  def fileDirty{}
+  def fileChanged{}
+}
+
+object TodoEditor extends SimpleSwingApplication with FileStateListener{
 
   def top = new MainFrame {
-    title = "Hello, World!"
+    title = "Todo Editor"
     preferredSize = new Dimension(600, 400)
-    val editor = new Editor()
+    val editor = new Editor(new FileStateListener{this.fileDirty; this.fileChanged})
     
-    reactions += {
-	  case KeyPressed(this.peer, Key.S, Control, Unknown) => editor.save//reaction here
-	}
+    override def closeOperation = editor.quit()
 
+    def fileDirty{
+    	setTitle(editor.file, "(", ")") 
+    }
+    
+    def fileChanged{
+    	setTitle(editor.file, "", "") 
+    }
+    
+    
+    def setTitle(f:Option[File], prefix:String, suffix:String){
+      f match{
+        case Some(file) => title = "Todo Editor: " + prefix + file.getName() + suffix
+        case None => title = "Todo Editor" 
+      }
+    }
     
     contents = new BorderPanel {
       import scala.swing.BorderPanel.Position._
-      layout += new Button {
-        text = "Click Me!"
-      } -> North
+//      layout += new Button {
+//        text = "Click Me!"
+//      } -> North
       layout +=editor->Center
     }
 
 
     val openAction = Action("Open File...") { editor.openFile }
-    val saveAction = Action("Save") { editor.save }
+    val saveAction = Action("Save (ctrl-s)") { editor.save }
     val saveAsAction = Action("Save As...") { editor.saveAs }
-    val quitAction = Action("Quit") { editor.quit }
+    val quitAction = Action("Quit (ctrl-q)") { editor.quit }
 
 
     menuBar = new MenuBar {
