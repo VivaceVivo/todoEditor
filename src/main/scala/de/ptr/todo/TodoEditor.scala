@@ -7,10 +7,13 @@ import scala.swing.SimpleSwingApplication
 import scala.swing.MenuBar
 import scala.swing.Menu
 import scala.swing.MenuItem
+import scala.swing.ScrollPane
 import scala.swing.Action
 import scala.swing.EditorPane
 import java.awt.Dimension
 import java.io.File
+import scala.swing.ScrollPane
+import scala.swing.ScrollBar
 
 trait FileStateListener{
   def fileDirty{}
@@ -41,13 +44,18 @@ object TodoEditor extends SimpleSwingApplication with FileStateListener{
         case None => title = "Todo Editor" 
       }
     }
-    
     contents = new BorderPanel {
       import scala.swing.BorderPanel.Position._
 //      layout += new Button {
 //        text = "Click Me!"
 //      } -> North
-      layout +=editor->Center
+      import scala.swing.ScrollPane.BarPolicy._
+      val scrollPane = new ScrollPane{
+        contents = editor
+        horizontalScrollBarPolicy = AsNeeded
+        verticalScrollBarPolicy = AsNeeded
+      }
+      layout +=scrollPane->Center
     }
 
 

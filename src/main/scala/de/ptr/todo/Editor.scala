@@ -1,3 +1,4 @@
+
 package de.ptr.todo
 
 import java.io.BufferedWriter
@@ -18,7 +19,8 @@ import scala.swing.FileChooser
 
 class Editor(fileStateListener: FileStateListener) extends EditorPane with StronglyReferenced {
   var file: Option[File] = None
-
+  val doc = peer.getDocument
+  doc.addDocumentListener(new MyDocumentListener(doc))
   listenTo(keys)
   reactions += {
     case KeyPressed(_, Key.S, Control, Standard) => save
