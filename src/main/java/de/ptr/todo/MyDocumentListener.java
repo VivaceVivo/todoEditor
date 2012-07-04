@@ -6,15 +6,18 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 
+import scala.swing.EditorPane;
+
 public class MyDocumentListener implements DocumentListener {
 	private Document doc;
 	DocumentOrganizer documentOrganizer;
-	public MyDocumentListener(Document doc) {
+	public MyDocumentListener(Document doc, EditorPane editorPane) {
 		this.doc = doc;
-		documentOrganizer = new DocumentOrganizer(doc);
+		documentOrganizer = new DocumentOrganizer(doc, editorPane);
 	}
 
 	public void changedUpdate(DocumentEvent e) {
+		process(e);
 	}
 
 	public void insertUpdate(DocumentEvent e) {

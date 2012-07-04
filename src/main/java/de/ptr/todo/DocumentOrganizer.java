@@ -1,7 +1,7 @@
 package de.ptr.todo;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat; 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.swing.text.BadLocationException;
@@ -9,24 +9,27 @@ import javax.swing.text.Document;
 import javax.swing.text.Style;
 import javax.swing.text.StyleContext;
 
+import scala.swing.EditorPane;
+
 public class DocumentOrganizer extends ThreadListenerSupport implements Runnable{
 	public static final String HISTORY_POSITION_MARKER = "---";
 	public static final DateFormat sdf = new SimpleDateFormat("(dd.MM.yyyy)");
+	
+	private Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
 	private Document doc;
-	boolean workTodo=false;
+	EditorPane editorpane;
+	private boolean workTodo=false;
 	private int modifiedStart = -1;
 	private int modifiedEnd   = -1;
 	private Thread organizerPrinterThread;
 	
-	public DocumentOrganizer(Document doc){
+	public DocumentOrganizer(Document doc, EditorPane editorpane){
 		this.doc = doc;
+		this.editorpane = editorpane;
 		organizerPrinterThread = new Thread(this);
 		organizerPrinterThread.start();
 	}
 	
-	public boolean isWorkTodo() {
-		return workTodo;
-	}
 	private void setWorkTodo(boolean workTodo) {
 		this.workTodo = workTodo;
 	}
@@ -36,6 +39,7 @@ public class DocumentOrganizer extends ThreadListenerSupport implements Runnable
 		this.modifiedEnd = end;
 		setWorkTodo(true);
 	}
+	
 	public void run() {
 		while(true){
 			try {
@@ -44,7 +48,7 @@ public class DocumentOrganizer extends ThreadListenerSupport implements Runnable
 				//ignore
 			}
 			if(workTodo){
-//				System.out.println("organizing document.");
+				editorpane.peer().setEditable(false);
 				int start, end;
 				if(modifiedStart>=0 && modifiedEnd>=0){
 					start = modifiedStart;
@@ -52,15 +56,12 @@ public class DocumentOrganizer extends ThreadListenerSupport implements Runnable
 					// reset
 					modifiedStart = -1;
 					modifiedEnd   = -1;
-				}else{
-					start = doc.getStartPosition().getOffset();
-					end = doc.getEndPosition().getOffset();
-				}
 //				System.out.println("start: "+start+" end:"+end);
 				try {
 					String text = doc.getText(start, end-start);
-//					System.out.println(">"+text);
+					System.out.println(">"+text+"<");
 					if(text.startsWith("+")){
+						System.out.println("organizing document.");
 						notifyListeners(true);
 						
 						text = text.replaceFirst("\\+", "").trim();
@@ -72,8 +73,11 @@ public class DocumentOrganizer extends ThreadListenerSupport implements Runnable
 					}
 				} catch (BadLocationException e) {
 					e.printStackTrace();
+				}finally{
+					workTodo=false;
+					editorpane.peer().setEditable(true);
 				}
-				workTodo=false;
+				}
 			}
 		}
 	}
@@ -81,11 +85,11 @@ public class DocumentOrganizer extends ThreadListenerSupport implements Runnable
 	private void insertForDate(Date date, String text) {
 		try {
 			String docText = doc.getText(doc.getStartPosition().getOffset(), doc.getLength());
-			int pos = docText.indexOf(HISTORY_POSITION_MARKER)+HISTORY_POSITION_MARKER.length();
-			Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+			int pos = docText.lastIndexOf(HISTORY_POSITION_MARKER)+HISTORY_POSITION_MARKER.length();
+			
 			if(pos>=0){
 				String dateString = sdf.format(date);
-				int datePos = docText.indexOf(dateString);
+				int datePos = docText.indexOf(dateString, pos);
 				if(datePos<0){
 					doc.insertString(pos, "\n"+dateString+"\n", def);
 					datePos = pos+1;// Zeilenumbruch
@@ -100,7 +104,6 @@ public class DocumentOrganizer extends ThreadListenerSupport implements Runnable
 	}
 
 	private void setupDocumentStructure() {
-		Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
 		try {
 			String docText = doc.getText(doc.getStartPosition().getOffset(), doc.getLength());
 			int pos = docText.indexOf(HISTORY_POSITION_MARKER);

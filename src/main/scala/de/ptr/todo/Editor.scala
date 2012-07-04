@@ -20,8 +20,8 @@ import javax.swing.text.StyledEditorKit
 class Editor(fileStateListener: FileStateListener) extends EditorPane with StronglyReferenced {
   this.editorKit = new StyledEditorKit()
   var file: Option[File] = None
-  val doc = peer.getDocument
-  doc.addDocumentListener(new MyDocumentListener(doc))
+  val doc = peer.getDocument 
+  doc.addDocumentListener(new MyDocumentListener(doc, this))
   listenTo(keys)
   reactions += {
     case KeyPressed(_, Key.S, Control, Standard) => save
