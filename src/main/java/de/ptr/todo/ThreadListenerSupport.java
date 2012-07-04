@@ -5,10 +5,10 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class ThreadListenerSupport {
-	private Set threadListener;
+	private Set<ThreadListener> threadListener;
 	
 	public ThreadListenerSupport (){
-		threadListener = new HashSet();
+		threadListener = new HashSet<ThreadListener>();
 	}
 	public void addThreadListener(ThreadListener listener){
 		threadListener.add(listener);
@@ -18,9 +18,9 @@ public class ThreadListenerSupport {
 	}
 	
 	protected void notifyListeners(boolean active){
-		Iterator listeners = threadListener.iterator();
+		Iterator<ThreadListener> listeners = threadListener.iterator();
 		while (listeners.hasNext()) {
-			ThreadListener lst = (ThreadListener) listeners.next();
+			ThreadListener lst = listeners.next();
 			if(active){
 				lst.notifyThreadActive();
 			}else{

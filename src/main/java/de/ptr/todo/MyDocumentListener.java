@@ -4,6 +4,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import javax.swing.text.StyledDocument;
 
 public class MyDocumentListener implements DocumentListener {
 	private Document doc;
@@ -25,8 +26,9 @@ public class MyDocumentListener implements DocumentListener {
 	}
 
 	public void process(DocumentEvent e) {
-//		Element ele = doc.getParagraphElement(e.getOffset());
+		StyledDocument styled = (StyledDocument)doc;
+		Element ele = styled.getParagraphElement(e.getOffset());
 //		prettyPrinter.changed(ele.getStartOffset(), ele.getEndOffset());
-		documentOrganizer.changed(e.getOffset(), e.getOffset() + e.getLength());
+		documentOrganizer.changed(ele.getStartOffset(), ele.getEndOffset());
 	}
 }

@@ -8,7 +8,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Style;
 import javax.swing.text.StyleContext;
-import javax.swing.text.StyledDocument;
 
 public class DocumentOrganizer extends ThreadListenerSupport implements Runnable{
 	public static final String HISTORY_POSITION_MARKER = "---";
@@ -40,7 +39,7 @@ public class DocumentOrganizer extends ThreadListenerSupport implements Runnable
 	public void run() {
 		while(true){
 			try {
-				Thread.sleep(1500);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				//ignore
 			}
@@ -111,8 +110,6 @@ public class DocumentOrganizer extends ThreadListenerSupport implements Runnable
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
-		
-		
 	}
 	
 }

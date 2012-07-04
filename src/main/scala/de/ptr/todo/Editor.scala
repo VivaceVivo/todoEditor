@@ -4,7 +4,6 @@ package de.ptr.todo
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
-
 import scala.swing.FileChooser.Result._
 import scala.swing.Reactions.StronglyReferenced
 import scala.swing.event.Key.Location.Standard
@@ -16,8 +15,10 @@ import scala.swing.Button
 import scala.swing.Dialog
 import scala.swing.EditorPane
 import scala.swing.FileChooser
+import javax.swing.text.StyledEditorKit
 
 class Editor(fileStateListener: FileStateListener) extends EditorPane with StronglyReferenced {
+  this.editorKit = new StyledEditorKit()
   var file: Option[File] = None
   val doc = peer.getDocument
   doc.addDocumentListener(new MyDocumentListener(doc))
