@@ -17,16 +17,21 @@ import scala.swing.EditorPane
 import scala.swing.FileChooser
 import javax.swing.text.StyledEditorKit
 import javax.swing.text.StyleContext
+import javax.swing.text.StyledDocument
+import scala.io.Source
 
-class Editor(fileStateListener: FileStateListener) extends EditorPane with StronglyReferenced {
+class Editor(filename:Option[String], fileStateListener: FileStateListener) extends EditorPane with StronglyReferenced {
   val defaultStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
   this.editorKit = new StyledEditorKit()
-  var file: Option[File] = None
+  var file: Option[File] = if(filename.isDefined)Some(new File(filename.get)) else None
   val doc = peer.getDocument
+  val prettyPrinter = new PrettyPrinter(doc.asInstanceOf[StyledDocument])
+  prettyPrinter.prettyPrint()
   val textPublisher = new TextPublisher()
   this.listenTo(textPublisher)
   doc.addDocumentListener(new MyDocumentListener(doc, this, textPublisher))
   listenTo(keys)
+  
   reactions += {
     case KeyPressed(_, Key.S, Control, Standard) => save
     case KeyPressed(_, Key.Q, Control, Standard) => quit
@@ -35,11 +40,18 @@ class Editor(fileStateListener: FileStateListener) extends EditorPane with Stron
     case TextInsertEvent(text, pos, caret) => {
       println("Received TextInsertEvent: " + pos + ":" + text );
       doc.insertString(pos, text, defaultStyle);
+      peer.setCaretPosition(caret)
+      prettyPrinter.prettyPrint()
     }
     
     case TextDeleteEvent(start, end) => {
     	println("Received TextDeleteEvent: " + start + "-" + end);
     	doc.remove(start, end)
+    	if(doc.getText(start, doc.getLength()-start).startsWith(DocumentOrganizer.HISTORY_POSITION_MARKER)){
+    	  // eine Leerzeile einfügen
+    	  doc.insertString(start, "\n", defaultStyle);
+    	  peer.setCaretPosition(start)
+    	}
     }
   }
 
@@ -72,8 +84,16 @@ class Editor(fileStateListener: FileStateListener) extends EditorPane with Stron
     true
   }
 
-  def openFile() {
-
+  def openFile(fileOpt:Option[File]) {
+    fileOpt match{
+      case Some(file) => {
+    	  println("openFile: " + file.getName())
+        val source = Source.fromFile(file)
+        text = source.getLines().mkString("\n")
+      }
+      case _ =>println("openFile: NONE")
+    }
+	  
   }
 
   def quit() {

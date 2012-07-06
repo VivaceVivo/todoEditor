@@ -22,10 +22,24 @@ trait FileStateListener{
 
 object TodoEditor extends SimpleSwingApplication with FileStateListener{
 
+  var filename:Option[String] = None
+  
+  override def startup(args: Array[String]){
+    println(args)
+    if(args.length>0){
+     filename = Some(args(0)) 
+     var file: Option[File] = if(filename.isDefined)Some(new File(filename.get)) else None
+     
+     // TODO hier weiter!!!
+     
+//     editor.openFile(file)
+    }
+  }
+  
   def top = new MainFrame {
     title = "Todo Editor"
     preferredSize = new Dimension(600, 400)
-    val editor = new Editor(new FileStateListener{this.fileDirty; this.fileChanged})
+    val editor = new Editor(filename, new FileStateListener{this.fileDirty; this.fileChanged})
     
     override def closeOperation = editor.quit()
 
@@ -46,9 +60,6 @@ object TodoEditor extends SimpleSwingApplication with FileStateListener{
     }
     contents = new BorderPanel {
       import scala.swing.BorderPanel.Position._
-//      layout += new Button {
-//        text = "Click Me!"
-//      } -> North
       import scala.swing.ScrollPane.BarPolicy._
       val scrollPane = new ScrollPane{
         contents = editor
@@ -59,7 +70,7 @@ object TodoEditor extends SimpleSwingApplication with FileStateListener{
     }
 
 
-    val openAction = Action("Open File...") { editor.openFile }
+    val openAction = Action("Open File...") { editor.openFile(None) }
     val saveAction = Action("Save (ctrl-s)") { editor.save }
     val saveAsAction = Action("Save As...") { editor.saveAs }
     val quitAction = Action("Quit (ctrl-q)") { editor.quit }
