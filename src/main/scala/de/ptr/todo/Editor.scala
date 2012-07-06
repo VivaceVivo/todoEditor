@@ -16,32 +16,46 @@ import scala.swing.Dialog
 import scala.swing.EditorPane
 import scala.swing.FileChooser
 import javax.swing.text.StyledEditorKit
+import javax.swing.text.StyleContext
 
 class Editor(fileStateListener: FileStateListener) extends EditorPane with StronglyReferenced {
+  val defaultStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
   this.editorKit = new StyledEditorKit()
   var file: Option[File] = None
-  val doc = peer.getDocument 
-  doc.addDocumentListener(new MyDocumentListener(doc, this))
+  val doc = peer.getDocument
+  val textPublisher = new TextPublisher()
+  this.listenTo(textPublisher)
+  doc.addDocumentListener(new MyDocumentListener(doc, this, textPublisher))
   listenTo(keys)
   reactions += {
     case KeyPressed(_, Key.S, Control, Standard) => save
     case KeyPressed(_, Key.Q, Control, Standard) => quit
     case KeyPressed(_, _, _, _) => fileStateListener.fileDirty
+    
+    case TextInsertEvent(text, pos, caret) => {
+      println("Received TextInsertEvent: " + pos + ":" + text );
+      doc.insertString(pos, text, defaultStyle);
+    }
+    
+    case TextDeleteEvent(start, end) => {
+    	println("Received TextDeleteEvent: " + start + "-" + end);
+    	doc.remove(start, end)
+    }
   }
 
-  def save():Boolean ={
+  def save(): Boolean = {
     file match {
       case None => saveAs()
       case Some(f) => saveBuffer(f)
     }
   }
 
-  def saveAs():Boolean ={
+  def saveAs(): Boolean = {
     val dialog = new FileChooser
     val result = dialog.showSaveDialog(this)
     result match {
-      case Cancel => false// nix
-      case Error => false// nix
+      case Cancel => false // nix
+      case Error => false // nix
       case Approve => {
         file = Some(dialog.selectedFile)
         saveBuffer(file.get)
@@ -68,9 +82,9 @@ class Editor(fileStateListener: FileStateListener) extends EditorPane with Stron
     val success = dialogResult match {
       case No => true
       case Cancel => true
-      case x => println("do save???: " + x);save
+      case x => println("do save???: " + x); save
     }
-    if(success){
+    if (success) {
       System.exit(0)
     }
   }

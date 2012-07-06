@@ -11,9 +11,11 @@ import scala.swing.EditorPane;
 public class MyDocumentListener implements DocumentListener {
 	private Document doc;
 	DocumentOrganizer documentOrganizer;
-	public MyDocumentListener(Document doc, EditorPane editorPane) {
+	
+	public MyDocumentListener(Document doc, EditorPane editorPane, TextPublisher textPublisher) {
 		this.doc = doc;
-		documentOrganizer = new DocumentOrganizer(doc, editorPane);
+		documentOrganizer = new DocumentOrganizer(doc, editorPane, textPublisher);
+		
 	}
 
 	public void changedUpdate(DocumentEvent e) {
