@@ -68,7 +68,7 @@ public class DocumentOrganizer extends ThreadListenerSupport implements Runnable
 							text = text.replaceFirst("\\+", "").trim();
 
 							insertForDate(new Date(), text, historyMarker);
-							textPublisher.deleteText(start, end - start + 1);
+							textPublisher.deleteText(start, end - start + 1, caretPosition-1);
 
 							notifyListeners(false);
 						} else if (text.startsWith("-\n")) {
@@ -77,9 +77,7 @@ public class DocumentOrganizer extends ThreadListenerSupport implements Runnable
 					}
 				} catch (BadLocationException e) {
 					e.printStackTrace();
-				} finally {
-					// editorpane.peer().setEditable(true);
-				}
+				} 
 			}
 		}
 	}
