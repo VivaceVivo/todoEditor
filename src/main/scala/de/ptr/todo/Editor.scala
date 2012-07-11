@@ -25,6 +25,11 @@ import javax.swing.text.StyledDocument
 import javax.swing.text.StyledEditorKit
 
 class Editor(fileStateListener: FileStateListener) extends EditorPane with StronglyReferenced {
+  
+  val keyActor = new KeyActor(this)
+  keyActor.start
+  this.listenTo(keyActor)
+  
   val defaultStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
   this.editorKit = new StyledEditorKit()
   var file: Option[File] = None
@@ -33,12 +38,15 @@ class Editor(fileStateListener: FileStateListener) extends EditorPane with Stron
   prettyPrinter.prettyPrint()
   val textPublisher = new TextPublisher()
   this.listenTo(textPublisher)
-  doc.addDocumentListener(new MyDocumentListener(doc, this, textPublisher))
+  val docListener = new MyDocumentListener(doc, this, textPublisher)
+
+  doc.addDocumentListener(docListener)
   listenTo(keys)
 
   reactions += {
     case KeyPressed(_, Key.S, Control, Standard) => save
     case KeyPressed(_, Key.Q, Control, Standard) => quit
+    case KeyPressed(_, Key.Minus, _, Standard) => keyActor ! "-"
     case KeyPressed(_, _, _, _) => fileStateListener.fileDirty
 
     case TextInsertEvent(text, pos, caret) => {

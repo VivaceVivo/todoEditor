@@ -11,6 +11,11 @@ import javax.swing.text.Document;
 import scala.actors.threadpool.LinkedBlockingQueue;
 import scala.swing.EditorPane;
 
+/**
+ * Workerthread 
+ * @author trappp
+ * 
+ */
 public class DocumentOrganizer extends ThreadListenerSupport implements Runnable {
 
 	public static final String HISTORY_POSITION_MARKER = "---";
@@ -71,9 +76,10 @@ public class DocumentOrganizer extends ThreadListenerSupport implements Runnable
 							textPublisher.deleteText(start, end - start + 1, caretPosition-1);
 
 							notifyListeners(false);
-						} else if (text.startsWith("-\n")) {
-							textPublisher.insertText(" ", caretPosition, caretPosition + 1);
-						}
+						} 
+//						else if (text.startsWith("-\n")) {
+//							textPublisher.insertText(" ", caretPosition, caretPosition + 1);
+//						}
 					}
 				} catch (BadLocationException e) {
 					e.printStackTrace();
