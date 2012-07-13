@@ -78,10 +78,12 @@ object TodoEditor extends SimpleSwingApplication with FileStateListener {
 
   top.pack()
 
+  /**
+   * Wird von der Application mit den Startparametern aufgerufen.
+   */
   override def startup(args: Array[String]) {
     super.startup(args)
     if (args.length > 0) {
-    	println(args(0))
       filename = Some(args(0))
       var file: Option[File] = if (filename.isDefined) Some(new File(filename.get)) else None
 

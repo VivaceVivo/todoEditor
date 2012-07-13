@@ -25,37 +25,48 @@ import javax.swing.text.StyledDocument
 import javax.swing.text.StyledEditorKit
 
 class Editor(fileStateListener: FileStateListener) extends EditorPane with StronglyReferenced {
-  val defaultStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+	var file: Option[File] = None
   this.editorKit = new StyledEditorKit()
-  var file: Option[File] = None
-  val doc = peer.getDocument
-  val prettyPrinter = new PrettyPrinter(doc.asInstanceOf[StyledDocument])
-  prettyPrinter.prettyPrint()
-  val textPublisher = new TextPublisher()
-  this.listenTo(textPublisher)
-  doc.addDocumentListener(new MyDocumentListener(doc, this, textPublisher))
-  listenTo(keys)
 
+	val doc = peer.getDocument
+  val prettyPrinter = new PrettyPrinter(doc.asInstanceOf[StyledDocument])
+  val defaultStyle = prettyPrinter.Styles.Default
+  prettyPrinter.prettyPrint()
+  
+  // setup messaging:
+  val textPublisher = new TextPublisher()
+  listenTo(textPublisher)	// 
+  listenTo(keys)					// standard Editor-KeyEvents
+  doc.addDocumentListener(new DocListener(textPublisher))
+
+  // gesammelte reactions der keys und des TextPublishers
   reactions += {
+    // KeyEvents:
     case KeyPressed(_, Key.S, Control, Standard) => save
     case KeyPressed(_, Key.Q, Control, Standard) => quit
-    case KeyPressed(_, _, _, _) => fileStateListener.fileDirty
-
-    case TextInsertEvent(text, pos, caret) => {
+    
+    
+    // DocumentProcessor-Events (TextPublisher)
+    case DocModifiedEvent() => {fileStateListener.fileDirty}
+    
+    case TextInsertEvent(text, pos) => {
       println("Received TextInsertEvent: " + pos + ":" + text);
       doc.insertString(pos, text, defaultStyle);
-      peer.setCaretPosition(caret)
       prettyPrinter.prettyPrint()
     }
 
-    case TextDeleteEvent(start, end, caret) => {
+    case TextDeleteEvent(start, end) => {
       println("Received TextDeleteEvent: " + start + "-" + end);
       doc.remove(start, end)
-      if (doc.getText(start, doc.getLength() - start).startsWith(DocumentOrganizer.HISTORY_POSITION_MARKER)) {
+      if (doc.getText(start, doc.getLength() - start).startsWith("---")) {
         // eine Leerzeile einfügen
-        doc.insertString(start, "\n", defaultStyle);
+        doc.insertString(start, "\r\n", defaultStyle);
       }
-      peer.setCaretPosition(caret)
+    }
+    
+    case TextCarretEvent(carret) => {
+    	println("Received TextCarretEvent: " + carret );
+      peer.setCaretPosition(carret)
     }
   }
 
